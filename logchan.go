@@ -28,6 +28,7 @@ func NewLogger(ch Channels, def Level) *Logger {
 	ret := new(Logger)
 	ret.level = def
 	ret.chanmap = make(map[byte]Channel)
+	ret.bitmap= make(map[Level]Channel)
 	for _, c := range ch {
 		ret.chanmap[c.Key] = c
 		ret.bitmap[c.Level] = c
