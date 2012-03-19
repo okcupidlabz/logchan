@@ -7,70 +7,70 @@ import (
 	"strings"
 )
 
-type LogLevel uint64
+type Level uint64
 
-type LogChannel struct {
-	logLevel LogLevel
+type Channel struct {
+	level Level
 	key byte
 	desc string
 }
 
-type LogChannels []LogChannel
+type Channels []Channel
 
-type Logging struct {
-	logLevel LogLevel
-	logChannels LogChannels
+type Logger struct {
+	level Level
+	channels Channels
 }
 
-func (logging *Logging) AtLevel (l LogLevel) bool {
-	return (l & logging.logLevel) == l
+func (logger *Logger) AtLevel (l Level) bool {
+	return (l & logger.level) == l
 }
 
-func (logging *Logging) SetLogging(s string) (e error, newdesc string) {
+func (logger *Logger) SetLogger(s string) (e error, newdesc string) {
 
-	tab := make(map[byte]LogChannel)
+	tab := make(map[byte]Channel)
 
-	for _, c := range logging.logChannels {
+	for _, c := range logger.channels {
 		tab[c.key] = c
 	}
 
-	var newlev LogLevel = 0
+	var newlev Level = 0
 
 
 	descs := make([]string,len(s))
 
 	for _, c := range []byte(s) {
 		if ch, found := tab[c]; found {
-			newlev |= ch.logLevel
+			newlev |= ch.level
 			descs = append (descs, ch.desc)
 		} else {
-			e = fmt.Errorf("bad logging channel found: '%c'\n", c)
+			e = fmt.Errorf("bad logger channel found: '%c'\n", c)
 			break
 		}
 	}
 
 	if e == nil {
 		newdesc = strings.Join(descs, ",")
-		logging.logLevel = newlev
+		logger.level = newlev
 	}
 	return
 }
 
 
-func (logging *Logging) Printf(l LogLevel, fmt string, v ...interface{}) {
-	if logging.AtLevel (l) {
+func (logger *Logger) Printf(l Level, fmt string, v ...interface{}) {
+	if logger.AtLevel (l) {
 		log.Printf (fmt, v...)
 	}
 }
 
-func (logging *Logging) Print(l LogLevel, v ...interface{}) {
-	if logging.AtLevel (l) {
+func (logger *Logger) Print(l Level, v ...interface{}) {
+	if logger.AtLevel (l) {
 		log.Print (v...)
 	}
 }
 
-func (logging *Logging) Println(l LogLevel, v ...interface{}) {
-	if logging.AtLevel (l) {
+func (logger *Logger) Println(l Level, v ...interface{}) {
+	if logger.AtLevel (l) {
 		log.Println (v...)
 	}
 }
