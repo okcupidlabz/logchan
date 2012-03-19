@@ -1,5 +1,5 @@
 
-package m8lt
+package logchan
 
 import (
 	"log"
