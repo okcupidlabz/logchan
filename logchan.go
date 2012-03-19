@@ -25,7 +25,7 @@ type Logger struct {
 }
 
 func NewLogger(ch Channels, def Level) *Logger {
-	var ret *Logger
+	ret := new(Logger)
 	ret.level = def
 	ret.chanmap = make(map[byte]Channel)
 	for _, c := range ch {
