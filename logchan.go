@@ -19,20 +19,25 @@ type Channels []Channel
 
 type Logger struct {
 	level Level
-	channels Channels
+	chanmap map[byte]Channel
 }
+
+func NewLogger(ch Channels, def Level) *Logger {
+	var ret *Logger
+	ret.level = def
+	ret.chanmap = make(map[byte]Channel)
+	for _, c := range ch {
+		ret.chanmap[c.key] = c
+	}
+	return ret
+}
+
 
 func (logger *Logger) AtLevel (l Level) bool {
 	return (l & logger.level) == l
 }
 
-func (logger *Logger) SetLogger(s string) (e error, newdesc string) {
-
-	tab := make(map[byte]Channel)
-
-	for _, c := range logger.channels {
-		tab[c.key] = c
-	}
+func (logger *Logger) SetChannels (s string) (e error, newdesc string) {
 
 	var newlev Level = 0
 
@@ -40,7 +45,7 @@ func (logger *Logger) SetLogger(s string) (e error, newdesc string) {
 	descs := make([]string,len(s))
 
 	for _, c := range []byte(s) {
-		if ch, found := tab[c]; found {
+		if ch, found := logger.chanmap[c]; found {
 			newlev |= ch.level
 			descs = append (descs, ch.desc)
 		} else {
