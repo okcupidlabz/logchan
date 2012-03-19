@@ -2,9 +2,9 @@
 package m8lt
 
 import (
-	"errors"
 	"log"
 	"fmt"
+	"strings"
 )
 
 type LogLevel uint64
@@ -22,22 +22,27 @@ type Logging struct {
 	logChannels LogChannels
 }
 
-func (logging *Logging) SetLogging(s string) (e error, newdesc string) {
-	tab := map[byte]LogChannel
+func (logging *Logging) AtLevel (l LogLevel) bool {
+	return (l & logging.logLevel) == l
+}
 
-	for _, c = range logging.logChannels {
+func (logging *Logging) SetLogging(s string) (e error, newdesc string) {
+
+	tab := make(map[byte]LogChannel)
+
+	for _, c := range logging.logChannels {
 		tab[c.key] = c
 	}
 
 	var newlev LogLevel = 0
 
 
-	descs := make([]string)
+	descs := make([]string,len(s))
 
-	for _, c = range []bytes(s) {
+	for _, c := range []byte(s) {
 		if ch, found := tab[c]; found {
-			newlev |= c.logLevel
-			descs = append (descs, c.desc)
+			newlev |= ch.logLevel
+			descs = append (descs, ch.desc)
 		} else {
 			e = fmt.Errorf("bad logging channel found: '%c'\n", c)
 			break
@@ -45,27 +50,27 @@ func (logging *Logging) SetLogging(s string) (e error, newdesc string) {
 	}
 
 	if e == nil {
-		newdesc = string.Join(descs, ",")
-		srv.logLevel = newlev
+		newdesc = strings.Join(descs, ",")
+		logging.logLevel = newlev
 	}
 	return
 }
 
 
 func (logging *Logging) Printf(l LogLevel, fmt string, v ...interface{}) {
-	if (logging.LogLevel & l) == l {
+	if logging.AtLevel (l) {
 		log.Printf (fmt, v...)
 	}
 }
 
 func (logging *Logging) Print(l LogLevel, v ...interface{}) {
-	if (logging.LogLevel & l) == l {
-		log.Printf (v...)
+	if logging.AtLevel (l) {
+		log.Print (v...)
 	}
 }
 
-func (logging *Logging) Println(v ...interface{}) {
-	if (logging.LogLevel & l) == l {
+func (logging *Logging) Println(l LogLevel, v ...interface{}) {
+	if logging.AtLevel (l) {
 		log.Println (v...)
 	}
 }
