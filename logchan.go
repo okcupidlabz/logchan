@@ -51,7 +51,7 @@ func (logger *Logger) LevelToPrefix (l Level) string {
 }
 
 func (logger *Logger) LevelToString(l Level) string {
-	descs := make([]string,len(logger.channels))
+	descs := make([]string,0)
 	
 	
 	for i := 0; l != 0 && i < len(logger.channels); i++ {
