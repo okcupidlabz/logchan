@@ -65,7 +65,22 @@ func (logger *Logger) LevelToString(l Level) string {
 	return strings.Join(descs, ",")
 }
 
-func (logger *Logger) SetChannels (s string) (e error, newdesc string) {
+func (logger *Logger) SetChannelsEz (which string, s string, setIfEmpty bool) bool {
+
+	ret := true
+	
+	if len(s) > 0 || setIfEmpty {
+		if s, e := logger.SetChannels(s); e == nil {
+			log.Printf("Setting %s logging to '%s'\n", which, s);
+		} else {
+			log.Printf("Failed to set %s logging: %s\n", which, e);
+			ret = false
+		}
+	}
+	return ret
+}
+
+func (logger *Logger) SetChannels (s string) (newdesc string, e error) {
 
 	var newlev Level = 0
 
@@ -74,7 +89,7 @@ func (logger *Logger) SetChannels (s string) (e error, newdesc string) {
 		if ch, found := logger.chanmap[c]; found {
 			newlev |= ch.Level
 		} else {
-			e = fmt.Errorf("bad logger channel found: '%c'\n", c)
+			e = fmt.Errorf("bad logger channel found: '%c'", c)
 			break
 		}
 	}
