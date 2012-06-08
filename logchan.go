@@ -18,12 +18,18 @@ type Channels []Channel
 
 const (
 	LOG_NONE  Level = 0x0
-	LOG_DEBUG Level =  0x800000000000000
+	LOG_DEBUG Level = 0x800000000000000
 	LOG_INFO  Level = 0x1000000000000000
 	LOG_WARN  Level = 0x2000000000000000
 	LOG_ERROR Level = 0x4000000000000000
 	LOG_FATAL Level = 0x8000000000000000
 	LOG_ALL   Level = 0xFFFFFFFFFFFFFFFF
+
+	LOG_LEVEL_1 Level = LOG_DEBUG
+	LOG_LEVEL_2 Level = LOG_INFO | LOG_LEVEL_1
+	LOG_LEVEL_3 Level = LOG_WARN | LOG_LEVEL_2
+	LOG_LEVEL_4 Level = LOG_ERROR | LOG_LEVEL_3
+	LOG_LEVEL_5 Level = LOG_FATAL | LOG_LEVEL_4
 )
 
 const (
@@ -73,6 +79,13 @@ func NewLogger(ch Channels, def Level) *Logger {
 	return ret
 }
 
+func (logger *Logger) AddChannels(ch Channels) {
+	for _, c := range ch {
+		logger.chanmap[c.Key] = c
+		logger.bitmap[c.Level] = c
+	}
+}
+
 func (logger *Logger) AtLevel (l Level) bool {
 	return (l & logger.level) != 0
 }
@@ -98,7 +111,7 @@ func (logger *Logger) LevelToString(l Level) string {
 	return strings.Join(descs, ",")
 }
 
-func (logger *Logger) SetChannelsEz (which string, s string, setIfEmpty bool) bool {
+func (logger *Logger) SetChannelsEasy (which string, s string, setIfEmpty bool) bool {
 	ret := true
 	if len(s) > 0 || setIfEmpty {
 		if s, e := logger.SetChannels(s); e == nil {
@@ -161,6 +174,10 @@ func (logger *Logger) Println(l Level, v ...interface{}) {
 
 var std = NewLogger(defaultChannels, LOG_ALL)
 
+func AddChannels(chs Channels) {
+	std.AddChannels(chs)
+}
+
 func AtLevel (l Level) bool {
 	return (l & std.level) != 0
 }
@@ -173,8 +190,8 @@ func LevelToString(l Level) string {
 	return std.LevelToString(l)
 }
 
-func SetChannelsEz (which string, s string, setIfEmpty bool) bool {
-	return std.SetChannelsEz(which, s, setIfEmpty)
+func SetChannelsEasy (which string, s string, setIfEmpty bool) bool {
+	return std.SetChannelsEasy(which, s, setIfEmpty)
 }
 
 func SetChannels (s string) (newdesc string, e error) {
