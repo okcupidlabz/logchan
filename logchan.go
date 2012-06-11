@@ -66,21 +66,21 @@ type Logger struct {
 func NewLogger(ch Channels, def Level) *Logger {
 	ret := new(Logger)
 	ret.level = def
-
+	ret.channels = make(Channels, 1)
 	ret.chanmap = make(map[byte]Channel)
 	ret.bitmap = make(map[Level]Channel)
 
 	for _, c := range defaultChannels {
 		ret.chanmap[c.Key] = c
 		ret.bitmap[c.Level] = c
+		ret.channels = append(ret.channels, c)
 	}
 
 	for _, c := range ch {
 		ret.chanmap[c.Key] = c
 		ret.bitmap[c.Level] = c
+		ret.channels = append(ret.channels, c)
 	}
-
-	ret.channels = ch
 	return ret
 }
 
@@ -88,6 +88,7 @@ func (logger *Logger) AddChannels(ch Channels) {
 	for _, c := range ch {
 		logger.chanmap[c.Key] = c
 		logger.bitmap[c.Level] = c
+		logger.channels = append(logger.channels, c)
 	}
 }
 
@@ -177,7 +178,7 @@ func (logger *Logger) Println(l Level, v ...interface{}) {
 	}
 }
 
-var std = NewLogger(defaultChannels, LOG_ALL)
+var std = NewLogger(defaultChannels, LOG_NONE)
 
 func AddChannels(chs Channels) {
 	std.AddChannels(chs)
