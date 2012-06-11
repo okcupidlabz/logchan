@@ -39,6 +39,11 @@ const (
 	CHANNEL_WARN byte  = 'W'
 	CHANNEL_ERROR byte = 'E'
 	CHANNEL_FATAL byte = 'F'
+	CHANNEL_LEVEL_1 byte = '1'
+	CHANNEL_LEVEL_2 byte = '2'
+	CHANNEL_LEVEL_3 byte = '3'
+	CHANNEL_LEVEL_4 byte = '4'
+	CHANNEL_LEVEL_5 byte = '5'
 	CHANNEL_ALL byte   = 'A'
 )
 
@@ -198,8 +203,8 @@ func SetChannels (s string) (newdesc string, e error) {
 	return std.SetChannels(s)
 }
 
-func Printf(l Level, v ...interface{}) {
-	std.Print(l, v...)
+func Printf(l Level, fmt string, v ...interface{}) {
+	std.Printf(l, fmt, v...)
 }
 
 func Print(l Level, v ...interface{}) {
