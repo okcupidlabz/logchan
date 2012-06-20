@@ -1,7 +1,9 @@
 package logchan
 
 import (
+	"fmt"
 	"log"
+	"strings"
 	"testing"
 	)
 
@@ -17,6 +19,14 @@ func (w *ArrayWriter) Write(line []byte) (n int, err error) {
 	w.lines = append(w.lines, line)
 	n = len(line)
 	return
+}
+
+func (w *ArrayWriter) String() string {
+	strs := make([]string, 0)
+	for _, l := range w.lines {
+		strs = append(strs, string(l))
+	}
+	return strings.Join(strs, "\n")
 }
 
 func (w *ArrayWriter) Len() int {
@@ -36,4 +46,6 @@ func TestStdLog(t *testing.T) {
 	if w.Len() != 1 {
 		t.Errorf("Failed to log 'foo bar'")
 	}
+		
+	fmt.Printf("%s", w)
 }

@@ -61,6 +61,7 @@ type Logger struct {
 	channels Channels
 	chanmap map[byte]Channel
 	bitmap map[Level]Channel
+	catchAll Channel
 }
 
 func NewLogger(ch Channels, def Level) *Logger {
@@ -70,10 +71,17 @@ func NewLogger(ch Channels, def Level) *Logger {
 	ret.chanmap = make(map[byte]Channel)
 	ret.bitmap = make(map[Level]Channel)
 
-	for _, c := range defaultChannels {
+	l := len(defaultChannels)
+	
+	for i, c := range defaultChannels {
 		ret.chanmap[c.Key] = c
 		ret.bitmap[c.Level] = c
 		ret.channels = append(ret.channels, c)
+		if i != l - 1 {
+			ret.channels = append(ret.channels, c)	
+		} else {
+			ret.catchAll = c
+		}
 	}
 
 	for _, c := range ch {
@@ -114,6 +122,11 @@ func (logger *Logger) LevelToString(l Level) string {
 			l = l&(^c.Level)
 		}
 	}
+
+	if len(descs) == 0 {
+		descs = append(descs, logger.catchAll.Desc)
+	}
+
 	return strings.Join(descs, ",")
 }
 
