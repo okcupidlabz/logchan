@@ -71,32 +71,39 @@ func NewLogger(ch Channels, def Level) *Logger {
 	ret.chanmap = make(map[byte]Channel)
 	ret.bitmap = make(map[Level]Channel)
 
-	l := len(defaultChannels)
-	
-	for i, c := range defaultChannels {
-		ret.chanmap[c.Key] = c
-		ret.bitmap[c.Level] = c
-		ret.channels = append(ret.channels, c)
-		if i != l - 1 {
-			ret.channels = append(ret.channels, c)	
-		} else {
+	for _, c := range ch {
+		if c.Level == LOG_ALL {
 			ret.catchAll = c
+		} else {
+			ret.chanmap[c.Key] = c
+			ret.bitmap[c.Level] = c
+			ret.channels = append(ret.channels, c)
 		}
 	}
 
-	for _, c := range ch {
-		ret.chanmap[c.Key] = c
-		ret.bitmap[c.Level] = c
-		ret.channels = append(ret.channels, c)
+  // add in the defaultChannels
+	for _, c := range defaultChannels {
+		if c.Level == LOG_ALL {
+			ret.catchAll = c
+		} else {
+			ret.chanmap[c.Key] = c
+			ret.bitmap[c.Level] = c
+			ret.channels = append(ret.channels, c)
+		}
 	}
+
 	return ret
 }
 
 func (logger *Logger) AddChannels(ch Channels) {
 	for _, c := range ch {
-		logger.chanmap[c.Key] = c
-		logger.bitmap[c.Level] = c
-		logger.channels = append(logger.channels, c)
+		if c.Level == LOG_ALL {
+			logger.catchAll = c
+		} else {
+			logger.chanmap[c.Key] = c
+			logger.bitmap[c.Level] = c
+			logger.channels = append(logger.channels, c)
+		}
 	}
 }
 
@@ -114,9 +121,8 @@ func (logger *Logger) LevelToPrefix (l Level) string {
 
 func (logger *Logger) LevelToString(l Level) string {
 	descs := make([]string,0)
-	
-	for i := 0; l != 0 && i < len(logger.channels); i++ {
-		c := logger.channels[i]
+
+	for _, c := range logger.channels {
 		if (c.Level & l) != 0 {
 			descs = append (descs, c.Desc)
 			l = l&(^c.Level)
